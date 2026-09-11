@@ -11,18 +11,104 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Auto-seed admin user and default journals if DB is empty
+async function ensureDefaultData() {
+  try {
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+      console.log('Database empty. Running auto-seed for default admin & journals...');
+      const salt = bcrypt.genSaltSync(10);
+      const hash = bcrypt.hashSync('admin123', salt);
+
+      const admin = await prisma.user.create({
+        data: {
+          name: 'Super Admin',
+          email: 'admin@stekom.ac.id',
+          password: hash,
+          isSuperAdmin: true,
+        }
+      });
+
+      await prisma.journal.create({
+        data: {
+          code: "JTIK",
+          name: "Jurnal Teknologi Informasi dan Komunikasi",
+          nameEn: "Journal of Information and Communication Technology",
+          issn: "2723-1178 (online)",
+          pattern: "{n:3}/LOA/JTIK/{bulan_romawi}/{tahun}",
+          reset: "yearly",
+          counter: 23,
+          issues: {
+            create: [
+              { volume: 12, number: 2, year: 2026, label: "Juli–Desember 2026", status: "open" },
+              { volume: 13, number: 1, year: 2027, label: "Januari–Juni 2027", status: "planned" }
+            ]
+          },
+          signers: {
+            create: [
+              { name: "Dr. Arif Nugroho, S.Kom., M.Kom.", position: "Editor in Chief" },
+              { name: "Rizky Pratama, M.Kom.", position: "Managing Editor" }
+            ]
+          },
+          users: {
+            create: [
+              { userId: admin.id, role: 'journal_owner' }
+            ]
+          }
+        }
+      });
+
+      await prisma.journal.create({
+        data: {
+          code: "JMBD",
+          name: "Jurnal Manajemen dan Bisnis Digital",
+          nameEn: "Journal of Management and Digital Business",
+          issn: "2809-4417 (online)",
+          pattern: "LOA-{tahun}{n:4}-JMBD",
+          reset: "yearly",
+          counter: 30,
+          issues: {
+            create: [
+              { volume: 7, number: 1, year: 2026, label: "Semester I 2026", status: "closed" }
+            ]
+          },
+          signers: {
+            create: [
+              { name: "Dr. Hesti Maharani, S.E., M.M.", position: "Ketua Dewan Editor" }
+            ]
+          },
+          users: {
+            create: [
+              { userId: admin.id, role: 'journal_owner' }
+            ]
+          }
+        }
+      });
+      console.log('Auto-seed completed successfully.');
+    }
+  } catch (err) {
+    console.error('Auto-seed check error:', err);
+  }
+}
+
 // Auth
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
+  
+  let user = await prisma.user.findUnique({ where: { email } });
   
   if (!user) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    await ensureDefaultData();
+    user = await prisma.user.findUnique({ where: { email } });
+  }
+
+  if (!user) {
+    return res.status(401).json({ error: 'Email atau kata sandi tidak valid' });
   }
   
   const isValid = bcrypt.compareSync(password, user.password);
   if (!isValid) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    return res.status(401).json({ error: 'Email atau kata sandi tidak valid' });
   }
 
   const token = generateToken(user);
@@ -512,9 +598,13 @@ app.get('/api/verify/:token', async (req, res) => {
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 3010;
-const server = http.createServer(app);
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server (only in local standalone node environment)
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3010;
+  const server = http.createServer(app);
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;
