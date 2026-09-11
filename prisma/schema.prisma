@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  isSuperAdmin Boolean       @default(false)
+  journals     JournalUser[]
+}
+
+model Journal {
+  id      Int           @id @default(autoincrement())
+  code    String        @unique
+  name    String
+  nameEn  String
+  issn    String
+  pattern String
+  reset   String        @default("yearly")
+  counter Int           @default(0)
+  
+  users   JournalUser[]
+  loas    Loa[]
+  issues  Issue[]
+  signers Signer[]
+}
+
+model JournalUser {
+  id        Int     @id @default(autoincrement())
+  role      String  // "journal_owner", "journal_editor", "journal_staff"
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  journal   Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  journalId Int
+
+  @@unique([userId, journalId])
+}
+
+model Issue {
+  id        Int     @id @default(autoincrement())
+  volume    Int
+  number    Int
+  year      Int
+  label     String
+  status    String  // "open", "closed", "planned"
+  
+  journal   Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  journalId Int
+  
+  loas      Loa[]
+}
+
+model Signer {
+  id             Int     @id @default(autoincrement())
+  name           String
+  position       String
+  signatureImage String?
+  
+  journal   Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  journalId Int
+
+  loas      Loa[]
+}
+
+model Loa {
+  id           Int      @id @default(autoincrement())
+  number       String
+  token        String   @unique
+  title        String
+  authors      Json     // Array of authors { name, affiliation, email, corresponding }
+  language     String   @default("id")
+  status       String   @default("issued") // "issued", "revoked"
+  revokeReason String?
+  hash         String
+  acceptedDate String
+  letterDate   String
+  sequence     Int
+
+  journal      Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  journalId    Int
+
+  issue        Issue?   @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  issueId      Int?
+
+  signer       Signer?  @relation(fields: [signerId], references: [id], onDelete: SetNull)
+  signerId     Int?
+}
