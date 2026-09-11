@@ -1,5 +1,4 @@
 import React from 'react';
-import { T, SANS, SERIF } from '../../utils/theme';
 import { QrCode } from '../ui';
 import { tanggalPanjang, longDateEn } from '../../utils/helpers';
 
@@ -7,7 +6,7 @@ export function LoaDocument({ journal, issue, signer, data, number, token, previ
   const en = data.language === "en";
 
   // Build authors and affiliations list
-  const validAuthors = data.authors.filter((a) => a.name.trim());
+  const validAuthors = (data.authors || []).filter((a) => a.name?.trim());
   const authorsLine = validAuthors.map((a) => a.name.trim()).join(", ");
   
   const affiliationsList = Array.from(
@@ -23,157 +22,213 @@ export function LoaDocument({ journal, issue, signer, data, number, token, previ
         width: "100%",
         maxWidth: "680px",
         minHeight: "880px",
-        fontFamily: SERIF,
+        fontFamily: "'Times New Roman', Times, serif",
         padding: "36px 44px 36px",
         lineHeight: 1.5,
         fontSize: "12.5px",
+        boxSizing: "border-box",
+        backgroundColor: "#ffffff",
+        color: "#0f172a"
       }}
     >
       {/* Background Watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.035] font-black text-6xl sm:text-7xl rotate-[-25deg] uppercase tracking-widest text-slate-900 z-0">
+      <div 
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotate(-25deg)',
+          opacity: 0.035,
+          fontWeight: 900,
+          fontSize: '64px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.15em',
+          color: '#0f172a',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          whiteSpace: 'nowrap',
+          zIndex: 0
+        }}
+      >
         STEKOM
       </div>
 
-      <div className="relative z-10 flex flex-col justify-between h-full min-h-[808px]">
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', minHeight: '808px' }}>
         <div>
           {/* Header Kop Surat */}
-          <div className="flex items-center justify-between gap-3 border-b-2 border-[#D97706] pb-3">
-            <div className="flex items-center gap-3">
-              {/* Circular Logo */}
-              <div className="size-13 rounded-full bg-[#14213A] border-2 border-[#D97706] text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0 font-sans">
-                ST
-              </div>
-              <div>
-                <div className="text-xs font-bold text-[#14213A] tracking-wider uppercase font-serif">
-                  UNIVERSITAS SAINS DAN TEKNOLOGI KOMPUTER
-                </div>
-                <div className="text-[11px] text-slate-600 font-sans mt-0.5">
-                  Lembaga Penelitian dan Pengabdian kepada Masyarakat
-                </div>
-                <div className="text-xs font-bold text-[#D97706] font-serif mt-0.5">
-                  {en ? (journal?.nameEn || journal?.name) : journal?.name}
-                </div>
-              </div>
-            </div>
-
-            <div className="text-right text-[10px] text-slate-500 font-sans leading-tight shrink-0 hidden sm:block">
-              <div>Jl. Majapahit No.605, Semarang,</div>
-              <div>Jawa Tengah</div>
-              <div className="text-slate-600 font-medium mt-0.5">jurnal@stekom.ac.id</div>
-              <div className="text-slate-600 font-medium">jurnal.stekom.ac.id</div>
-            </div>
+          <div style={{ borderBottom: '2px solid #D97706', paddingBottom: '12px', marginBottom: '20px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                <tr>
+                  <td style={{ width: '56px', verticalAlign: 'middle', paddingRight: '12px' }}>
+                    <div style={{ 
+                      width: '48px', 
+                      height: '48px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#14213A', 
+                      border: '2px solid #D97706', 
+                      color: '#ffffff', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      fontWeight: 'bold', 
+                      fontSize: '16px',
+                      fontFamily: 'sans-serif'
+                    }}>
+                      ST
+                    </div>
+                  </td>
+                  <td style={{ verticalAlign: 'middle' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#14213A', letterSpacing: '0.05em', textTransform: 'uppercase', fontFamily: "'Times New Roman', serif" }}>
+                      UNIVERSITAS SAINS DAN TEKNOLOGI KOMPUTER
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#475569', fontFamily: 'sans-serif', marginTop: '2px' }}>
+                      Lembaga Penelitian dan Pengabdian kepada Masyarakat
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#D97706', fontFamily: "'Times New Roman', serif", marginTop: '2px' }}>
+                      {en ? (journal?.nameEn || journal?.name) : journal?.name}
+                    </div>
+                  </td>
+                  <td style={{ textAlign: 'right', verticalAlign: 'middle', fontSize: '10px', color: '#64748b', fontFamily: 'sans-serif', lineHeight: 1.35, whiteSpace: 'nowrap' }}>
+                    <div>Jl. Majapahit No.605, Semarang,</div>
+                    <div>Jawa Tengah</div>
+                    <div style={{ color: '#475569', fontWeight: 500, marginTop: '2px' }}>jurnal@stekom.ac.id</div>
+                    <div style={{ color: '#475569', fontWeight: 500 }}>jurnal.stekom.ac.id</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           {/* Letter Title & Badge */}
-          <div className="text-center mt-5 mb-4">
-            <div className="inline-block bg-[#D9531E] text-white font-sans font-bold text-xs sm:text-sm px-4 py-1 tracking-[0.2em] uppercase rounded-xs shadow-2xs">
+          <div style={{ textAlign: 'center', marginTop: '16px', marginBottom: '16px' }}>
+            <div style={{ 
+              display: 'inline-block', 
+              backgroundColor: '#D9531E', 
+              color: '#ffffff', 
+              fontFamily: 'sans-serif', 
+              fontWeight: 'bold', 
+              fontSize: '13px', 
+              padding: '4px 16px', 
+              letterSpacing: '0.2em', 
+              textTransform: 'uppercase', 
+              borderRadius: '2px' 
+            }}>
               LETTER OF ACCEPTANCE
             </div>
-            <div className="text-[11px] text-slate-500 font-serif italic mt-1">
+            <div style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic', marginTop: '4px' }}>
               Surat Pernyataan Penerimaan Artikel Jurnal
             </div>
-            <div className="text-xs font-semibold text-slate-800 font-serif mt-2">
-              Nomor: <span className={number ? "text-slate-900" : "text-slate-700 font-semibold"}>{number || "1732/LOA-MAHASISWA/UNIV.STEKOM/I-2026"}</span>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#1e293b', marginTop: '6px' }}>
+              Nomor: <span style={{ color: '#0f172a', fontWeight: 'bold' }}>{number || "1732/LOA-MAHASISWA/UNIV.STEKOM/I-2026"}</span>
             </div>
           </div>
 
           {/* Body Content */}
-          <div className="space-y-3 text-xs sm:text-[12.5px] leading-relaxed text-slate-800">
-            <div>
-              <span className="font-serif">Kepada Yth.</span>
+          <div style={{ fontSize: '12.5px', lineHeight: 1.6, color: '#1e293b' }}>
+            <div style={{ marginBottom: '8px' }}>
+              Kepada Yth.
             </div>
 
-            <div className="grid grid-cols-[75px_1fr] gap-x-1 gap-y-1 mt-1">
-              <span className="font-bold text-slate-900">Penulis</span>
-              <span>: <strong className="font-bold text-slate-900">{authorsLine || (en ? "Christine Adriani Puspito, Kunto Adi Wibowo, Detta Rahmawan" : "Christine Adriani Puspito, Kunto Adi Wibowo, Detta Rahmawan")}</strong></span>
-              
-              <span className="font-bold text-slate-900">Afiliasi</span>
-              <span>: <strong className="font-bold text-slate-900">{affiliationsList || "Program Studi Ilmu Komunikasi, Fakultas Ilmu Komunikasi, Universitas Padjadjaran, Indonesia"}</strong></span>
-            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '12px' }}>
+              <tbody>
+                <tr>
+                  <td style={{ width: '75px', fontWeight: 'bold', color: '#0f172a', verticalAlign: 'top', padding: '2px 0' }}>Penulis</td>
+                  <td style={{ verticalAlign: 'top', padding: '2px 0' }}>: <strong style={{ fontWeight: 'bold', color: '#0f172a' }}>{authorsLine || (en ? "Christine Adriani Puspito, Kunto Adi Wibowo, Detta Rahmawan" : "Christine Adriani Puspito, Kunto Adi Wibowo, Detta Rahmawan")}</strong></td>
+                </tr>
+                <tr>
+                  <td style={{ width: '75px', fontWeight: 'bold', color: '#0f172a', verticalAlign: 'top', padding: '2px 0' }}>Afiliasi</td>
+                  <td style={{ verticalAlign: 'top', padding: '2px 0' }}>: <strong style={{ fontWeight: 'bold', color: '#0f172a' }}>{affiliationsList || "Program Studi Ilmu Komunikasi, Fakultas Ilmu Komunikasi, Universitas Padjadjaran, Indonesia"}</strong></td>
+                </tr>
+              </tbody>
+            </table>
 
-            <p className="mt-3">
+            <p style={{ margin: '12px 0 8px 0' }}>
               {en
                 ? `Thank you for submitting your manuscript to ${journal?.nameEn || journal?.name}. Following a thorough peer-review process, we are pleased to inform you that your manuscript titled:`
                 : `Terima kasih telah mengirimkan artikel jurnal melalui redaksi ${journal?.name}. Setelah melalui proses review sejawat (peer review), kami menyampaikan bahwa artikel dengan judul:`}
             </p>
 
             {/* Article Title */}
-            <div className="my-3 text-center px-4 py-1">
-              <div className="font-extrabold text-slate-900 text-xs sm:text-sm leading-relaxed font-serif uppercase tracking-wide">
+            <div style={{ margin: '12px 0', textAlign: 'center', padding: '4px 12px' }}>
+              <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '13px', lineHeight: 1.5, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
                 &ldquo;{data.title ? data.title.toUpperCase() : "DAMSEL IN DISTRESS: ANALISIS REPRESENTASI GENDER PADA POSTER FILM DISNEY UNTUK ANAK-ANAK"}&rdquo;
               </div>
             </div>
 
-            <p className="text-center text-xs text-slate-700">
+            <p style={{ textAlign: 'center', fontSize: '12px', color: '#334155', margin: '8px 0 12px 0' }}>
               dinyatakan dengan status sebagai berikut:
             </p>
 
-            {/* Editorial Decision */}
-            <div className="mt-3 pt-2 border-t border-slate-200/80 text-center">
-              <div className="text-[10px] font-bold tracking-[0.25em] text-slate-400 uppercase font-sans">
+            {/* Editorial Decision Box */}
+            <div style={{ margin: '14px 0', padding: '10px 0', borderTop: '1px solid #cbd5e1', borderBottom: '1px solid #cbd5e1', textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', fontWeight: 'bold', letterSpacing: '0.25em', color: '#64748b', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
                 KEPUTUSAN REDAKSI
               </div>
-              <div className="text-base sm:text-lg font-extrabold text-emerald-700 tracking-wider uppercase my-1 font-serif">
+              <div style={{ fontSize: '17px', fontWeight: 800, color: '#047857', letterSpacing: '0.05em', textTransform: 'uppercase', margin: '4px 0' }}>
                 DITERIMA (ACCEPTED)
               </div>
-              <div className="border-b border-slate-200/80 mt-2 mb-3" />
             </div>
 
             {/* Publication Issue Info */}
-            <div>
-              <p className="text-xs font-serif text-slate-800">
+            <div style={{ marginTop: '12px' }}>
+              <p style={{ fontSize: '12px', color: '#1e293b', margin: '0 0 6px 0' }}>
                 Artikel akan diterbitkan pada:
               </p>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1 my-2 text-xs font-serif text-slate-900 max-w-xs">
-                <div>Volume : <strong className="font-bold">{issue?.volume || '8'}</strong></div>
-                <div>Bulan : <strong className="font-bold">{issue?.month || (issue?.label ? issue.label.split(' ')[0] : 'Juni')}</strong></div>
-                <div>Nomor : <strong className="font-bold">{issue?.number || '2'}</strong></div>
-                <div>Tahun : <strong className="font-bold">{issue?.year || '2026'}</strong></div>
-              </div>
+              <table style={{ width: '280px', borderCollapse: 'collapse', fontSize: '12px', color: '#0f172a' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ width: '140px', padding: '2px 0' }}>Volume : <strong>{issue?.volume || '8'}</strong></td>
+                    <td style={{ padding: '2px 0' }}>Bulan : <strong>{issue?.month || (issue?.label ? issue.label.split(' ')[0] : 'Juni')}</strong></td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '2px 0' }}>Nomor : <strong>{issue?.number || '2'}</strong></td>
+                    <td style={{ padding: '2px 0' }}>Tahun : <strong>{issue?.year || '2026'}</strong></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <p className="mt-3 text-xs font-serif text-slate-800">
+            <p style={{ marginTop: '14px', fontSize: '12px', color: '#1e293b' }}>
               Demikian surat ini dibuat untuk dapat dipergunakan sebagaimana mestinya.
             </p>
           </div>
         </div>
 
         {/* Footer: Signer & QR Code */}
-        <div className="flex items-end justify-between mt-6 pt-4 border-t border-slate-100">
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
           {/* QR Code Container */}
-          <div className="flex flex-col items-center">
-            <div className="p-1 bg-white border border-slate-200 rounded-md shadow-2xs">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ padding: '4px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
               <QrCode value={token || "PREVIEW"} px={68} />
             </div>
-            <div className="text-[9.5px] text-slate-500 font-sans mt-1 text-center leading-tight">
+            <div style={{ fontSize: '9.5px', color: '#64748b', fontFamily: 'sans-serif', marginTop: '4px', textAlign: 'center', lineHeight: 1.3 }}>
               {verifyUrl}
               <br />
-              <span className="font-mono text-slate-700 font-semibold">
+              <span style={{ fontFamily: 'monospace', color: '#334155', fontWeight: 600 }}>
                 {token || "QR akan dibuat setelah terbit"}
               </span>
             </div>
           </div>
 
           {/* Signature Block */}
-          <div className="text-right text-xs font-serif text-slate-900 min-w-[200px]">
+          <div style={{ textAlign: 'right', fontSize: '12px', color: '#0f172a', minWidth: '220px' }}>
             <div>Semarang, {data.letterDate ? (en ? longDateEn(data.letterDate) : tanggalPanjang(data.letterDate)) : "20 Juni 2026"}</div>
-            <div className="text-slate-800 mt-0.5">{signer?.position || "Editor in Chief,"}</div>
+            <div style={{ color: '#334155', marginTop: '2px' }}>{signer?.position || "Editor in Chief,"}</div>
             
-            {/* Signature Image / Cursive Representation */}
-            <div className="h-14 flex items-center justify-end my-1">
+            {/* Signature Image / Spacing */}
+            <div style={{ height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', margin: '4px 0' }}>
               {signer?.signatureImage ? (
-                <img src={signer.signatureImage} alt="Tanda tangan" className="h-12 max-w-[160px] object-contain" />
+                <img src={signer.signatureImage} alt="Tanda tangan" style={{ height: '48px', maxWidth: '160px', objectFit: 'contain', marginLeft: 'auto' }} />
               ) : (
-                <div className="text-xl font-bold italic text-blue-900 font-serif tracking-tight pr-2">
-                  {signer?.name || "Ahmad Riyanto"}
-                </div>
+                <div style={{ height: '48px' }} />
               )}
             </div>
 
-            <div className="font-bold text-xs text-slate-900 underline font-serif">
+            <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#0f172a', textDecoration: 'underline' }}>
               {signer?.name || "Dr. Ahmad Riyanto, M.Kom."}
             </div>
-            <div className="text-[11px] text-slate-600 font-serif mt-0.5">
+            <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
               NIDN. {signer?.nidn || "0612058501"}
             </div>
           </div>
