@@ -12,11 +12,15 @@ export function AuthProvider({ children }) {
       fetch('/api/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error('Invalid token');
+      .then(async res => {
+        if (!res.ok) throw new Error('Invalid token');
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
       })
-      .then(data => setUser(data))
+      .then(data => {
+        if (data) setUser(data);
+        else throw new Error('Empty user response');
+      })
       .catch(() => {
         localStorage.removeItem('siloa_token');
         setUser(null);
@@ -28,13 +32,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+    let res;
+    try {
+      res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+    } catch (err) {
+      throw new Error('Gagal terhubung ke server backend. Pastikan koneksi dan server aktif.');
+    }
+
+    const text = await res.text();
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      throw new Error('Respons server tidak valid (Bukan JSON). Silakan coba lagi.');
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Email atau kata sandi tidak valid');
+    }
     
     localStorage.setItem('siloa_token', data.token);
     setUser(data.user);
